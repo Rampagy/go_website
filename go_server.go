@@ -17,12 +17,12 @@ func index_handler(w http.ResponseWriter, r *http.Request) {
     // define template to be served
     t := template.New("Generic")
 
+    // add subpages to the template first
     pages, _ := ioutil.ReadDir("SubPages/")
+    reqPath := strings.ToUpper(path.Base(r.URL.Path))
 
     for _, page := range pages {
         p := path.Base(page.Name())
-
-        reqPath := strings.ToUpper(path.Base(r.URL.Path))
         availPath := strings.ToUpper(p)
 
         //if the request is one of the pages
@@ -36,5 +36,13 @@ func index_handler(w http.ResponseWriter, r *http.Request) {
         }
     }
 
+    // tack reusables onto the end of the template
+    reusables, _ := ioutil.ReadDir("Reuse")
+    for _, reusable := range reusables {
+        t, _ = t.ParseFiles("Reuse/" + path.Base(reusable.Name()))
+    }
+
+
+    fmt.Println(t.Name())
     fmt.Println(t.Execute(w, nil))
 }
