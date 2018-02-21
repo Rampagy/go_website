@@ -1,3 +1,16 @@
+{{ define "NavBarStyle" }}
+<link rel="stylesheet" type="text/css" href="static/NavBarStyle.css">
+{{ end }}
+
+
 {{ define "NavBar"}}
-<p> HMMMMMMM </p>
+<ul class="title_list">
+
+    {{ range $page := .Subpages }}
+
+    <li class="title_item"><a href="{{ $page.Link }}">{{ $page.Name }}</a></li>
+
+    {{ end }}
+
+</ul>
 {{ end }}

@@ -3,10 +3,12 @@
 
     <head>
         <link rel="stylesheet" type="text/css" href="static/mystyle.css">
+        {{ template "NavBarStyle" }}
     </head>
 
     <body>
-        <h1>Three!</h1>
-        {{template "NavBar"}}
+        {{ template "NavBar" . }}
+        <p>Three page text.......</p>
     </body>
+
 </html>

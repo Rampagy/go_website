@@ -5,7 +5,17 @@ import ("net/http"
         "path"
         "io/ioutil"
         "strings"
+        "errors"
         "fmt")
+
+type PageInfo struct {
+    Subpages []NavBarMap
+}
+
+type NavBarMap struct {
+    Link string
+    Name string
+}
 
 func main() {
     http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
@@ -14,8 +24,11 @@ func main() {
 }
 
 func index_handler(w http.ResponseWriter, r *http.Request) {
-    // define template to be served
+    // define generic template
     t := template.New("Generic")
+
+    // define struct for templates
+    var PageData PageInfo
 
     // add subpages to the template first
     pages, _ := ioutil.ReadDir("SubPages/")
@@ -25,24 +38,26 @@ func index_handler(w http.ResponseWriter, r *http.Request) {
         p := path.Base(page.Name())
         availPath := strings.ToUpper(p)
 
+        PageData.Subpages = append(PageData.Subpages,
+                    NavBarMap{Link: p, Name: p})
+
         //if the request is one of the pages
         if ((reqPath == availPath) ||
             (reqPath + ".HTML" == availPath)) {
-                // use p in case filename isn't uppercase
+                // use original filename rather than uppercase name
                 t, _ = template.ParseFiles("SubPages/" + p)
-                break
-        } else {
-            t, _ = template.ParseFiles("SubPages/Home.html")
+        } else if (t.Name() == "Generic") {
+                t, _ = template.ParseFiles("SubPages/Home.html")
         }
     }
 
     // tack reusables onto the end of the template
     reusables, _ := ioutil.ReadDir("Reuse")
     for _, reusable := range reusables {
-        t, _ = t.ParseFiles("Reuse/" + path.Base(reusable.Name()))
+        err := errors.New("emit macho dwarf: elf header corrupted")
+        t, err = t.ParseFiles("Reuse/" + path.Base(reusable.Name()))
+        fmt.Println(err)
     }
 
-
-    fmt.Println(t.Name())
-    fmt.Println(t.Execute(w, nil))
+    fmt.Println(t.Execute(w, PageData))
 }

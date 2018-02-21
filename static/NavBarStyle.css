@@ -1,0 +1,14 @@
+.title_list {
+   list-style-type: none;
+   margin: 0;
+   padding: 0;
+   overflow: hidden;
+}
+
+.title_item {
+   float: left;
+   display: block;
+   text-align: center;
+   padding: 14px 16px;
+   text-decoration: none;
+}
