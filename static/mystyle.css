@@ -1,4 +1,11 @@
 body {
     background-color: #00A697;
     color: #E1E7F3;
+
+    margin-left: 15%;
+    margin-right: 15%;
+}
+
+.page_center {
+    margin: auto;
 }

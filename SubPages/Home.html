@@ -2,13 +2,28 @@
 <html>
 
     <head>
-        <link rel="stylesheet" type="text/css" href="static/mystyle.css">
+        {{ template "header" . }}
         {{ template "NavBarStyle" }}
+        <link rel="stylesheet" type="text/css" href="static/mystyle.css">
     </head>
 
     <body>
         {{ template "NavBar" . }}
         <p>Home page text wooooo more test .....</p>
+
+        <table class="page_center">
+            <tr>
+                <th>header 1</th>
+                <th>header 2</th>
+                <th>header 3</th>
+            </tr>
+
+            <tr>
+                <td>one</td>
+                <td>two</td>
+                <td>three</td>
+            </tr>
+        </table>
     </body>
 
 </html>

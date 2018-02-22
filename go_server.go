@@ -9,7 +9,9 @@ import ("net/http"
         "fmt")
 
 type PageInfo struct {
-    Subpages []NavBarMap
+    Subpages []NavBarMap            // all available subpages
+    HomeInfo NavBarMap              // homepage info
+    ActiveInfo NavBarMap            // info on which page is active
 }
 
 type NavBarMap struct {
@@ -29,6 +31,7 @@ func index_handler(w http.ResponseWriter, r *http.Request) {
 
     // define struct for templates
     var PageData PageInfo
+    PageData.HomeInfo = NavBarMap{Link: "Home.html", Name: "Home"}
 
     // add subpages to the template first
     pages, _ := ioutil.ReadDir("SubPages/")
@@ -38,16 +41,21 @@ func index_handler(w http.ResponseWriter, r *http.Request) {
         p := path.Base(page.Name())
         availPath := strings.ToUpper(p)
 
-        PageData.Subpages = append(PageData.Subpages,
-                    NavBarMap{Link: p, Name: p})
+        if (availPath != "HOME.HTML") {
+            PageData.Subpages = append(PageData.Subpages,
+                NavBarMap{Link: p, Name: p[:len(p) - len(path.Ext(p))]})
+        }
 
         //if the request is one of the pages
         if ((reqPath == availPath) ||
             (reqPath + ".HTML" == availPath)) {
                 // use original filename rather than uppercase name
                 t, _ = template.ParseFiles("SubPages/" + p)
+                PageData.ActiveInfo = NavBarMap{Link: p,
+                            Name: p[:len(p) - len(path.Ext(p))]}
         } else if (t.Name() == "Generic") {
                 t, _ = template.ParseFiles("SubPages/Home.html")
+                PageData.ActiveInfo = NavBarMap{Link: "Home.html", Name: "Home"}
         }
     }
 

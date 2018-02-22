@@ -4,12 +4,12 @@
 
 
 {{ define "NavBar"}}
-<ul class="title_list">
+<ul class="nav_bar">
+
+    <li><a class="nav_bar_homepage" href="{{ .HomeInfo.Link }}"><h1>{{ .HomeInfo.Name }}</h1></a></li>
 
     {{ range $page := .Subpages }}
-
-    <li class="title_item"><a href="{{ $page.Link }}">{{ $page.Name }}</a></li>
-
+        <li><a class="nav_bar_subpage" href="{{ $page.Link }}"><h1>{{ $page.Name }}</h1></a></li>
     {{ end }}
 
 </ul>
