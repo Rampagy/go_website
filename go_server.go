@@ -6,6 +6,7 @@ import ("net/http"
         "io/ioutil"
         "strings"
         "errors"
+        "time"
         "fmt")
 
 type PageInfo struct {
@@ -20,9 +21,21 @@ type NavBarMap struct {
 }
 
 func main() {
+    doEvery(time.Second, serveDynamic)
+
     http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
     http.HandleFunc("/", index_handler)
     http.ListenAndServe(":8080", nil)
+}
+
+func serveDynamic() {
+    http.Handle("/dynamic/", http.StripPrefix("/dynamic/", http.FileServer(http.Dir("dynamic/"))))
+}
+
+func doEvery(d time.Duration, f func(time.Time)) {
+    for x := range time.Tick(d) {
+        f(x)
+    }
 }
 
 func index_handler(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +75,7 @@ func index_handler(w http.ResponseWriter, r *http.Request) {
     // tack reusables onto the end of the template
     reusables, _ := ioutil.ReadDir("Reuse")
     for _, reusable := range reusables {
-        err := errors.New("emit macho dwarf: elf header corrupted")
+        err := errors.New("Original Error")
         t, err = t.ParseFiles("Reuse/" + path.Base(reusable.Name()))
         fmt.Println(err)
     }

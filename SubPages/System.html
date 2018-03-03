@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        {{ template "header" . }}
+        {{ template "NavBarStyle" }}
+        <link rel="stylesheet" type="text/css" href="static/mystyle.css">
+    </head>
+
+    <body>
+        {{ template "NavBar" . }}
+
+
+        <p id="temperature">0</p>
+
+
+
+
+        <script type="text/javascript">
+            setInterval(function() {
+                var result = "nothing";
+                var xmlhttp = new XMLHttpRequest();
+
+                xmlhttp.onreadystatechange = function() {
+                if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
+                    document.getElementById("temperature").innerHTML = this.responseText;
+                    }
+                };
+
+                xmlhttp.open("GET", "/dynamic/temperature.txt", true);
+                xmlhttp.send();
+            }, 1000);
+        </script>
+
+
+
+    </body>
+
+</html>

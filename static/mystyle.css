@@ -1,6 +1,6 @@
 body {
-    background-color: #00A697;
-    color: #E1E7F3;
+    background-color: #E1E7F3;
+    color: #00A697;
 
     margin-left: 15%;
     margin-right: 15%;
@@ -8,4 +8,5 @@ body {
 
 .page_center {
     margin: auto;
+    text-align: center;
 }
