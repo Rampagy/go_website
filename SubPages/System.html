@@ -10,26 +10,38 @@
     <body>
         {{ template "NavBar" . }}
 
+        <table class="page_center" style="width:60%">
+            <tr>
+                <th style="width:60%">Feature</th>
+                <th>Value</th>
+            </tr>
 
-        <p id="temperature">0</p>
+            <tr>
+                <td>CPU Temperature</td>
+                <td><span id="cpu_temp">0.0</span><span> °C</span></td>
+            </tr>
+
+            <tr>
+                <td>CPU Frequency</td>
+                <td><span id="cpu_freq">0.0</span><span> Mhz</span></td>
+            </tr>
+        </table>
 
 
 
 
-        <script type="text/javascript">
-            setInterval(function() {
-                var result = "nothing";
-                var xmlhttp = new XMLHttpRequest();
+        <script>
+            var url = 'ws://' + window.location.host + '/ws';
+            var c = new WebSocket(url);
+            c.onmessage = function (msg) {
+                var temp = document.getElementById("cpu_temp");
+                var freq = document.getElementById("cpu_freq");
 
-                xmlhttp.onreadystatechange = function() {
-                if (this.readyState == XMLHttpRequest.DONE && this.status == 200) {
-                    document.getElementById("temperature").innerHTML = this.responseText;
-                    }
-                };
+                var data = JSON.parse(msg.data);
 
-                xmlhttp.open("GET", "/dynamic/temperature.txt", true);
-                xmlhttp.send();
-            }, 1000);
+                temp.innerHTML = data.cpuTemp;
+                freq.innerHTML = data.cpuFreq;
+            }
         </script>
 
 

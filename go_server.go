@@ -1,13 +1,20 @@
 package main
 
-import ("net/http"
+import (
+        "net/http"
         "html/template"
         "path"
         "io/ioutil"
         "strings"
         "errors"
-        "time"
-        "fmt")
+        "fmt"
+        //"time"
+        //"strconv"
+        //"encoding/json"
+
+        //"github.com/go-chi/chi"
+        //"gopkg.in/olahol/melody.v1"
+)
 
 type PageInfo struct {
     Subpages []NavBarMap            // all available subpages
@@ -20,24 +27,59 @@ type NavBarMap struct {
     Name string
 }
 
+type SystemData struct {
+    CpuFreq string `json:"cpuFreq"`
+    CpuTemp string `json:"cpuTemp"`
+}
+
 func main() {
-    doEvery(time.Second, serveDynamic)
+    //r := chi.NewRouter()
+    //m := melody.New()
 
     http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
     http.HandleFunc("/", index_handler)
-    http.ListenAndServe(":8080", nil)
-}
+/*
+    r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
+        m.HandleRequest(w, r)
+    })*/
 
-func serveDynamic() {
-    http.Handle("/dynamic/", http.StripPrefix("/dynamic/", http.FileServer(http.Dir("dynamic/"))))
-}
+    //go getSystem(m)
 
-func doEvery(d time.Duration, f func(time.Time)) {
-    for x := range time.Tick(d) {
-        f(x)
+    http.ListenAndServe(":8080", nil)//r)
+}
+/*
+func getSystem(m *melody.Melody) {
+    for q := time.Tick(1 * time.Second); ; <-q {
+        temperature, err := ioutil.ReadFile("dynamic/temperature.txt") // just pass the file name
+        if err != nil {
+            fmt.Print(err)
+        }
+
+        frequency, err := ioutil.ReadFile("dynamic/frequency.txt") // just pass the file name
+        if err != nil {
+            fmt.Print(err)
+        }
+
+        temp, err := strconv.ParseFloat(string(temperature[:len(temperature)-1]), 64)
+        t := strconv.FormatFloat(temp/1000, 'f', 1, 64)
+        freq, err := strconv.ParseFloat(string(frequency[:len(frequency)-1]), 64)
+        f := strconv.FormatFloat(freq/1000, 'f', 0, 64)
+
+        msg := SystemData{CpuFreq: f, CpuTemp: t}
+        b, err := json.Marshal(msg)
+
+        var l SystemData
+        json.Unmarshal(b, &l)
+
+        if err != nil {
+            s := `{"freq":0.0, "temp":0.0}`
+            m.Broadcast([]byte(s))
+        } else {
+            m.Broadcast(b)
+        }
     }
 }
-
+*/
 func index_handler(w http.ResponseWriter, r *http.Request) {
     // define generic template
     t := template.New("Generic")
