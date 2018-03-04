@@ -1,126 +1,138 @@
 package main
 
 import (
-        "net/http"
-        "html/template"
-        "path"
-        "io/ioutil"
-        "strings"
-        "errors"
-        "fmt"
-        //"time"
-        //"strconv"
-        //"encoding/json"
+	"bytes"
+	"fmt"
+	"html/template"
+	"io/ioutil"
+	"net/http"
+	"path"
+	"strconv"
+	"strings"
+	"time"
 
-        //"github.com/go-chi/chi"
-        //"gopkg.in/olahol/melody.v1"
+	"github.com/gorilla/websocket"
+	"github.com/lunny/log"
 )
 
-type PageInfo struct {
-    Subpages []NavBarMap            // all available subpages
-    HomeInfo NavBarMap              // homepage info
-    ActiveInfo NavBarMap            // info on which page is active
+type pageInfo struct {
+	Subpages   []navBarMap // all available subpages
+	HomeInfo   navBarMap   // homepage info
+	ActiveInfo navBarMap   // info on which page is active
 }
 
-type NavBarMap struct {
-    Link string
-    Name string
+type navBarMap struct {
+	Link string
+	Name string
 }
 
-type SystemData struct {
-    CpuFreq string `json:"cpuFreq"`
-    CpuTemp string `json:"cpuTemp"`
+type systemData struct {
+	CPUFreq string `json:"cpuFreq"`
+	CPUTemp string `json:"cpuTemp"`
 }
+
+var upgrader = websocket.Upgrader{}
 
 func main() {
-    //r := chi.NewRouter()
-    //m := melody.New()
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
+	http.HandleFunc("/", index)
+	http.HandleFunc("/ws", getSystem)
 
-    http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
-    http.HandleFunc("/", index_handler)
-/*
-    r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
-        m.HandleRequest(w, r)
-    })*/
-
-    //go getSystem(m)
-
-    http.ListenAndServe(":8080", nil)//r)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
-/*
-func getSystem(m *melody.Melody) {
-    for q := time.Tick(1 * time.Second); ; <-q {
-        temperature, err := ioutil.ReadFile("dynamic/temperature.txt") // just pass the file name
-        if err != nil {
-            fmt.Print(err)
-        }
 
-        frequency, err := ioutil.ReadFile("dynamic/frequency.txt") // just pass the file name
-        if err != nil {
-            fmt.Print(err)
-        }
+func getSystem(w http.ResponseWriter, r *http.Request) {
+	c, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Errorf("upgrading HTTP: %v", err)
+		return
+	}
+	defer c.Close()
+	for q := time.Tick(1 * time.Second); ; <-q {
+		temp, err := readFileAsFloat("dynamic/temperature.txt")
+		if err != nil {
+			log.Errorf("reading temperature: %v", err)
+			return
+		}
 
-        temp, err := strconv.ParseFloat(string(temperature[:len(temperature)-1]), 64)
-        t := strconv.FormatFloat(temp/1000, 'f', 1, 64)
-        freq, err := strconv.ParseFloat(string(frequency[:len(frequency)-1]), 64)
-        f := strconv.FormatFloat(freq/1000, 'f', 0, 64)
+		freq, err := readFileAsFloat("dynamic/frequency.txt")
+		if err != nil {
+			log.Errorf("reading frequency: %v", err)
+			return
+		}
 
-        msg := SystemData{CpuFreq: f, CpuTemp: t}
-        b, err := json.Marshal(msg)
+		t := strconv.FormatFloat(temp/1000, 'f', 1, 64)
+		f := strconv.FormatFloat(freq/1000, 'f', 0, 64)
 
-        var l SystemData
-        json.Unmarshal(b, &l)
+		msg := systemData{CPUFreq: f, CPUTemp: t}
 
-        if err != nil {
-            s := `{"freq":0.0, "temp":0.0}`
-            m.Broadcast([]byte(s))
-        } else {
-            m.Broadcast(b)
-        }
-    }
+		if err = c.WriteJSON(msg); err != nil {
+			return
+		}
+	}
 }
-*/
-func index_handler(w http.ResponseWriter, r *http.Request) {
-    // define generic template
-    t := template.New("Generic")
 
-    // define struct for templates
-    var PageData PageInfo
-    PageData.HomeInfo = NavBarMap{Link: "Home.html", Name: "Home"}
+func readFileAsFloat(filename string) (float64, error) {
+	b, err := ioutil.ReadFile(filename) // just pass the file name
+	if err != nil {
+		return 0.0, fmt.Errorf("reading file: %v", err)
+	}
 
-    // add subpages to the template first
-    pages, _ := ioutil.ReadDir("SubPages/")
-    reqPath := strings.ToUpper(path.Base(r.URL.Path))
+	temp, err := strconv.ParseFloat(string(bytes.TrimSpace(b)), 64)
+	if err != nil {
+		return 0.0, fmt.Errorf("parsing value: %v", err)
+	}
 
-    for _, page := range pages {
-        p := path.Base(page.Name())
-        availPath := strings.ToUpper(p)
+	return temp, nil
+}
 
-        if (availPath != "HOME.HTML") {
-            PageData.Subpages = append(PageData.Subpages,
-                NavBarMap{Link: p, Name: p[:len(p) - len(path.Ext(p))]})
-        }
+func index(w http.ResponseWriter, r *http.Request) {
+	// define generic template
+	t := template.New("Generic")
 
-        //if the request is one of the pages
-        if ((reqPath == availPath) ||
-            (reqPath + ".HTML" == availPath)) {
-                // use original filename rather than uppercase name
-                t, _ = template.ParseFiles("SubPages/" + p)
-                PageData.ActiveInfo = NavBarMap{Link: p,
-                            Name: p[:len(p) - len(path.Ext(p))]}
-        } else if (t.Name() == "Generic") {
-                t, _ = template.ParseFiles("SubPages/Home.html")
-                PageData.ActiveInfo = NavBarMap{Link: "Home.html", Name: "Home"}
-        }
-    }
+	// define struct for templates
+	var PageData pageInfo
+	PageData.HomeInfo = navBarMap{Link: "Home.html", Name: "Home"}
 
-    // tack reusables onto the end of the template
-    reusables, _ := ioutil.ReadDir("Reuse")
-    for _, reusable := range reusables {
-        err := errors.New("Original Error")
-        t, err = t.ParseFiles("Reuse/" + path.Base(reusable.Name()))
-        fmt.Println(err)
-    }
+	// add subpages to the template first
+	pages, _ := ioutil.ReadDir("SubPages/")
+	reqPath := strings.ToUpper(path.Base(r.URL.Path))
 
-    fmt.Println(t.Execute(w, PageData))
+	for _, page := range pages {
+		p := path.Base(page.Name())
+		availPath := strings.ToUpper(p)
+
+		if availPath != "HOME.HTML" {
+			PageData.Subpages = append(PageData.Subpages,
+				navBarMap{Link: p, Name: p[:len(p)-len(path.Ext(p))]})
+		}
+
+		//if the request is one of the pages
+		if (reqPath == availPath) ||
+			(reqPath+".HTML" == availPath) {
+			// use original filename rather than uppercase name
+			t, _ = template.ParseFiles("SubPages/" + p)
+			PageData.ActiveInfo = navBarMap{Link: p,
+				Name: p[:len(p)-len(path.Ext(p))]}
+		} else if t.Name() == "Generic" {
+			t, _ = template.ParseFiles("SubPages/Home.html")
+			PageData.ActiveInfo = navBarMap{Link: "Home.html", Name: "Home"}
+		}
+	}
+
+	// tack reusables onto the end of the template
+	reusables, _ := ioutil.ReadDir("Reuse")
+	for _, reusable := range reusables {
+		var err error
+		t, err = t.ParseFiles("Reuse/" + path.Base(reusable.Name()))
+		if err != nil {
+			http.Error(w, fmt.Sprintf("parsing reuse files: %v", err), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	if err := t.Execute(w, PageData); err != nil {
+		http.Error(w, fmt.Sprintf("executing index template: %v", err), http.StatusInternalServerError)
+		return
+	}
 }
