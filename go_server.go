@@ -49,13 +49,13 @@ func getSystem(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 	for q := time.Tick(1 * time.Second); ; <-q {
-		temp, err := readFileAsFloat("dynamic/temperature.txt")
+		temp, err := readFileAsFloat("/sys/class/thermal/thermal_zone0/temp")
 		if err != nil {
 			log.Printf("reading temperature: %v", err)
 			return
 		}
 
-		freq, err := readFileAsFloat("dynamic/frequency.txt")
+		freq, err := readFileAsFloat("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
 		if err != nil {
 			log.Printf("reading frequency: %v", err)
 			return
