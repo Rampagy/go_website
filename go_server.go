@@ -8,12 +8,12 @@ import (
         "strings"
         "errors"
         "fmt"
-        //"time"
-        //"strconv"
-        //"encoding/json"
+        "time"
+        "strconv"
+        "encoding/json"
 
-        //"github.com/go-chi/chi"
-        //"gopkg.in/olahol/melody.v1"
+        "github.com/go-chi/chi"
+        "gopkg.in/olahol/melody.v1"
 )
 
 type PageInfo struct {
@@ -33,21 +33,21 @@ type SystemData struct {
 }
 
 func main() {
-    //r := chi.NewRouter()
-    //m := melody.New()
+    r := chi.NewRouter()
+    m := melody.New()
 
     http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
     http.HandleFunc("/", index_handler)
-/*
+
     r.Get("/ws", func(w http.ResponseWriter, r *http.Request) {
         m.HandleRequest(w, r)
-    })*/
+    })
 
-    //go getSystem(m)
+    go getSystem(m)
 
-    http.ListenAndServe(":8080", nil)//r)
+    http.ListenAndServe(":8080", nil) //r)
 }
-/*
+
 func getSystem(m *melody.Melody) {
     for q := time.Tick(1 * time.Second); ; <-q {
         temperature, err := ioutil.ReadFile("dynamic/temperature.txt") // just pass the file name
@@ -79,7 +79,7 @@ func getSystem(m *melody.Melody) {
         }
     }
 }
-*/
+
 func index_handler(w http.ResponseWriter, r *http.Request) {
     // define generic template
     t := template.New("Generic")
