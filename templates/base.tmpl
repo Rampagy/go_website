@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=.5" />
+        <title>SystemData - {{block "title" .}}{{end}}</title>
+        <link rel="stylesheet" type="text/css" href="static/nav.css">
+        <link rel="stylesheet" type="text/css" href="static/style.css">
+        {{ block "css" .}}{{end}}
+    </head>
+
+    <body>
+        <ul class="nav-bar">
+            <li><a class='nav-bar-homepage {{if eq .Active "home"}}active{{end}}' href="/"><h1>Home</h1></a></li>
+            <li><a class='nav-bar-subpage {{if eq .Active "system"}}active{{end}}' href="/system"><h1>System</h1></a></li>
+        </ul>
+
+        {{block "content" .}}{{end}}
+        {{block "js" .}}{{end}}
+    </body>
+</html>

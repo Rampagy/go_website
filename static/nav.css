@@ -1,10 +1,10 @@
-.nav_bar {
+.nav-bar {
     list-style-type: none;
     padding: 0;
     overflow: hidden;
 }
 
-.nav_bar_subpage {
+.nav-bar-subpage {
     float: right;
     display: block;
     text-align: center;
@@ -12,7 +12,7 @@
     text-decoration: none;
 }
 
-.nav_bar_homepage {
+.nav-bar-homepage {
     float: left;
     display: block;
     text-align: center;
@@ -20,6 +20,10 @@
     text-decoration: none;
 }
 
-a.nav_bar_subpage, a.nav_bar_homepage {
+a.nav-bar-subpage, a.nav-bar-homepage {
     color: #00A697;
+}
+
+a.nav-bar-subpage.active, a.nav-bar-homepage.active {
+    text-decoration: underline;
 }
