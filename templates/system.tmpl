@@ -1,16 +1,6 @@
-<!DOCTYPE html>
-<html>
-
-    <head>
-        {{ template "header" . }}
-        {{ template "NavBarStyle" }}
-        <link rel="stylesheet" type="text/css" href="static/mystyle.css">
-    </head>
-
-    <body>
-        {{ template "NavBar" . }}
-
-        <table class="page_center" style="width:60%">
+{{define "title"}}System{{end}}
+{{define "content"}}
+        <table class="page-center" style="width:60%">
             <tr>
                 <th style="width:60%">Feature</th>
                 <th>Value</th>
@@ -18,24 +8,24 @@
 
             <tr>
                 <td>CPU Temperature</td>
-                <td><span id="cpu_temp">0.0</span><span> °C</span></td>
+                <td><span id="cpuTemp">0.0</span><span> °C</span></td>
             </tr>
 
             <tr>
                 <td>CPU Frequency</td>
-                <td><span id="cpu_freq">0.0</span><span> Mhz</span></td>
+                <td><span id="cpuFreq">0.0</span><span> Mhz</span></td>
             </tr>
         </table>
+{{end}}
 
 
-
-
+{{define "js"}}
         <script>
             var url = 'ws://' + window.location.host + '/ws';
             var c = new WebSocket(url);
             c.onmessage = function (msg) {
-                var temp = document.getElementById("cpu_temp");
-                var freq = document.getElementById("cpu_freq");
+                var temp = document.getElementById("cpuTemp");
+                var freq = document.getElementById("cpuFreq");
 
                 var data = JSON.parse(msg.data);
 
@@ -43,9 +33,4 @@
                 freq.innerHTML = data.cpuFreq;
             }
         </script>
-
-
-
-    </body>
-
-</html>
+{{end}}
